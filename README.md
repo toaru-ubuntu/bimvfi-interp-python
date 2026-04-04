@@ -1,4 +1,4 @@
-# BimVFI-interp-python (VIP)
+# BimVFI-interp-python (BIP)
 
 BiM-VFIエンジンを活用し、GUIで簡単に操作できる動画フレーム補間ツールです。
 重複フレームの削除やシーンチェンジの検出機能を備え、自然で滑らかな補間動画を生成します。
