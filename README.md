@@ -47,13 +47,13 @@ Radeon,GeForceの場合は以下のリンクを参照
 https://pytorch.org/
      
 4. **学習済み重みファイルの配置** 
-    モデルの重みファイルはファイルサイズが大きいため、GitHubリポジトリには含まれていません。BiM-VFIの公式（https://github.com/KAIST-VICLab/BiM-VFI）から重みファイル (bim_vfi.pth) をダウンロードし、以下の階層に配置してください。
+モデルの重みファイルはファイルサイズが大きいため、GitHubリポジトリには含まれていません。BiM-VFIの公式（https://github.com/KAIST-VICLab/BiM-VFI）から重みファイル (bim_vfi.pth) をダウンロードし、以下の階層に配置してください。
     
     ```Plaintext
     bim_vfi/pretrained/bim_vfi.pth
     
 5. **使い方**
-    仮想環境を有効化した状態で、メインスクリプトを実行します。
+仮想環境を有効化した状態で、メインスクリプトを実行します。
     ```bash
     python ./bimvfi_interp_python.py
 
