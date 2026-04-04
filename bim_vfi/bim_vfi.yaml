@@ -1,0 +1,5 @@
+model:
+  name: bim_vfi
+  args:
+    pyr_level: 3
+    feat_channels: 32
