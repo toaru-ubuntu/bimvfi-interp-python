@@ -24,6 +24,25 @@ class VIP_Interpolator:
             
         print(f"使用デバイス: {self.device}")
 
+        # ★★★ ここから追加：実行環境に最適なデータ型の自動判定 ★★★
+        self.autocast_dtype = torch.float32 # デフォルトは最も安全なFP32
+
+        if self.device.type == 'cuda':
+            # NVIDIA GPUの場合：Ampere世代(RTX3000番台)以降ならbfloat16、それ以前はfloat16
+            if torch.cuda.is_bf16_supported():
+                self.autocast_dtype = torch.bfloat16
+            else:
+                self.autocast_dtype = torch.float16
+        elif self.device.type == 'xpu':
+            # Intel GPUの場合：Arcアーキテクチャはbfloat16に強力に最適化されているため一択
+            self.autocast_dtype = torch.bfloat16
+        else:
+            # CPU等の場合：処理落ちやエラーを防ぐためFP32のまま計算
+            self.autocast_dtype = torch.float32
+            
+        print(f"自動混合精度(AMP)の型: {self.autocast_dtype}")
+        # ★★★ ここまで追加 ★★★
+        
         # 設定の読み込み
         with open(cfg_path, 'r') as f:
             cfg = yaml.load(f, Loader=yaml.FullLoader)
@@ -38,6 +57,7 @@ class VIP_Interpolator:
         self.model = self.base_model.model
         self.model.eval()
         self.model.to(self.device)
+        self.model.float()
         
         self.cached_file = None
         self.cached_tensor = None
@@ -83,11 +103,12 @@ class VIP_Interpolator:
                     dis0 = torch.ones((1, 1, h, w), device=self.device) * (r / ratio)
                     dis1 = 1 - dis0
                     
-                    results = self.model(
-                        img0=img0, img1=img_tensor, time_step=time_range[r], 
-                        dis0=dis0, dis1=dis1, scale_factor=scale_factor,
-                        ratio=(1 / scale_factor), pyr_level=pyr_level, nr_lvl_skipped=0
-                    )
+                    with torch.autocast(device_type=self.device.type, dtype=self.autocast_dtype):
+	                    results = self.model(
+	                        img0=img0, img1=img_tensor, time_step=time_range[r], 
+	                        dis0=dis0, dis1=dis1, scale_factor=scale_factor,
+	                        ratio=(1 / scale_factor), pyr_level=pyr_level, nr_lvl_skipped=0
+	                    )
                     
                     imgt_pred = torch.clip(results['imgt_pred'], 0, 1)
                     
@@ -130,11 +151,12 @@ class VIP_Interpolator:
             dis1 = 1 - dis0
             time_tensor = torch.tensor([timestep]).view(1, 1, 1, 1).to(self.device)
             
-            results = self.model(
-                img0=img0, img1=img1, time_step=time_tensor, 
-                dis0=dis0, dis1=dis1, scale_factor=scale_factor,
-                ratio=(1 / scale_factor), pyr_level=pyr_level, nr_lvl_skipped=0
-            )
+            with torch.autocast(device_type=self.device.type, dtype=self.autocast_dtype):
+                results = self.model(
+                    img0=img0, img1=img1, time_step=time_tensor, 
+                    dis0=dis0, dis1=dis1, scale_factor=scale_factor,
+                    ratio=(1 / scale_factor), pyr_level=pyr_level, nr_lvl_skipped=0
+                )
             
             imgt_pred = torch.clip(results['imgt_pred'], 0, 1)
             
@@ -150,6 +172,12 @@ class VIP_Interpolator:
             # 保存
             cv2.imwrite(output_path, out_img)
             
+            # ★追加: XPUのVRAMキャッシュを解放してゴミを捨てる
+            #if self.device.type == 'cuda':
+                #torch.cuda.empty_cache()
+            #elif hasattr(torch, "xpu") and self.device.type == 'xpu':
+                #torch.xpu.empty_cache()
+                
 if __name__ == '__main__':
     interp = VIP_Interpolator()
     interp.process_folder(
