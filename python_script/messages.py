@@ -1,6 +1,6 @@
 MESSAGES = {
     "en": {
-        "app_title": "bimvfi_interp_python_ver0.20",
+        "app_title": "bimvfi_interp_python_ver0.30",
         "select_action": "Please select your action",
         "start": "START!",
         "stop": "STOP",
@@ -13,7 +13,7 @@ MESSAGES = {
         
     },
     "ja": {
-        "app_title": "bimvfi_interp_python_ver0.20",
+        "app_title": "bimvfi_interp_python_ver0.30",
         "select_action": "処理を選択してください",
         "start": "START!",
         "stop": "STOP",
