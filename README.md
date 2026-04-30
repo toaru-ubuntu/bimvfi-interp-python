@@ -45,7 +45,7 @@ CPU動作時でも、PyTorchのマルチスレッドを活かして効率的に�
     pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
 
     # その他の必須ライブラリ
-    pip install opencv-python pyyaml scenedetect tqdm
+    pip install opencv-python pyyaml scenedetect tqdm av
     
 Radeon,GeForceの場合は以下のリンクを参照
 https://pytorch.org/
